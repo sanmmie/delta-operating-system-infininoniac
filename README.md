@@ -66,6 +66,7 @@ Contributions are welcome. Please:
 * 
 
 # Contact
-* Owner: sanmmie — https://github.com/sanmmi
+* Owner: sanmmie — https://github.com/sanmmie
 * Email: adebowalesanmi@gmail.com
+* Portfolio: https://sanmmie.netlify.app
 * WhatsApp: +2348089847539
