@@ -56,6 +56,9 @@ git checkout main"
 
 # Contributing
 Contributions are welcome. Please:
+
+* Fork the repository
+* 
 * 
 
 # License
