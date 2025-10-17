@@ -55,7 +55,7 @@ git checkout main"
 * 
 
 # Contributing
-* 
+Contributions are welcome. Please:
 * 
 
 # License
