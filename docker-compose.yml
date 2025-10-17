@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  deltanet-orchestrator:
+    build: .
+    ports:
+      - "8765:8765"
+    environment:
+      - NODE_ENV=production
+      - DELTANET_HOST=0.0.0.0
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8765/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  deltanet-node:
+    build: .
+    command: ["python", "delta_net_async.py"]
+    environment:
+      - ORCHESTRATOR_URL=http://orchestrator:8765
+    depends_on:
+      - deltanet-orchestrator
+    scale: 3
+
+  monitoring:
+    image: prom/prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+
+  dashboard:
+    image: grafana/grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=delta2024
