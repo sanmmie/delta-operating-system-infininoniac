@@ -5,9 +5,9 @@ Consciousness Conductor OS - Coordinating positive change across domains
 
 * Overview
 * Getting Started
-** Prerequisites
-** Clone
-** Installation
-** Run
+* Prerequisites
+* Clone
+* Installation
+* Run
 
 * 
