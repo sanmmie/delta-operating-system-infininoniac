@@ -10,4 +10,8 @@ Consciousness Conductor OS - Coordinating positive change across domains
 * Installation
 * Run
 
-* 
+* Usage
+* Development 
+* Contributing
+* License
+* Contact
