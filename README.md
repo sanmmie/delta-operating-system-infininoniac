@@ -35,6 +35,9 @@ Delta Operating System (Infininoniac) is an experimental project aiming to act a
 *
 
 # Clone
+ "git clone https://github.com/sanmmie/delta-operating-system-infininoniac.git
+cd delta-operating-system-infininoniac
+git checkout main"
 
 # Installation
 * The repository does not include language-specific metadata in this README.
