@@ -24,5 +24,5 @@ Delta Operating System (Infininoniac) is an experimental project aiming to act a
 
 * Coordinated orchestration framework for cross-domain workflows
 * Extensible modules for integration with external services
-* 
-* 
+* Configurable environment-driven behavior
+* ...
