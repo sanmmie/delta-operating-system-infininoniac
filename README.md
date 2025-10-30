@@ -5,8 +5,8 @@
 ---
 
 ## ✨ Vision  
-Delta OS is a **living framework for ethical coordination** — a fusion of artificial intelligence, systems design, and moral computation.  
-Its mission is to **amplify positive change** across global domains — from health and environment to finance, governance, and culture.  
+Delta OS is a *living framework for ethical coordination* — a fusion of artificial intelligence, systems design, and moral computation.  
+Its mission is to *amplify positive change* across global domains — from health and environment to finance, governance, and culture.  
 
 It doesn’t control; it *coordinates the good*.  
 Every line of code, every transformation cycle, embodies gratitude, love, and consciousness.  
@@ -37,11 +37,11 @@ CLEAN = FILTER(ETHICAL_PRINCIPLES)
 ## 🏗️ Architecture Overview  
 
 ### **Core Components**
-- **Δ OS Kernel** – Async multi-node orchestrator for domain coordination  
-- **Ethical AI Engine** – Generates transformation plans with confidence scoring  
-- **Context Compiler** – Translates environmental data into meaningful context  
-- **Transmission Layer** – WebSocket and in-memory communication for Δ nodes  
-- **Impact Protocol Layer** – Funding, verification, and record-keeping mechanisms  
+- *Δ OS Kernel* – Async multi-node orchestrator for domain coordination  
+- *Ethical AI Engine* – Generates transformation plans with confidence scoring  
+- *Context Compiler* – Translates environmental data into meaningful context  
+- *Transmission Layer* – WebSocket and in-memory communication for Δ nodes  
+- *Impact Protocol Layer* – Funding, verification, and record-keeping mechanisms  
 
 ### **Operational Domains**
 - 🩺 Healing & Health  
@@ -101,16 +101,16 @@ forming a digital nervous system for planetary balance.
 
 ## 💎 Impact Protocol
 
-### **1. Impact Marketplace**
+### *1. Impact Marketplace*
 
 A *Global Solution Exchange* powered by NFTs representing verified social and environmental outcomes.
 
-### **2. Funding Model**
+### *2. Funding Model*
 
-1% transaction fee fuels a **self-sustaining global economy** of good,
-projected to exceed **$500B** in cumulative impact.
+1% transaction fee fuels a *self-sustaining global economy* of good,
+projected to exceed *$500B* in cumulative impact.
 
-### **3. Verification System**
+### *3. Verification System*
 
 Ethical transparency through **AI + Human Wisdom** cross-validation,
 ensuring every transformation produces measurable benefit.
