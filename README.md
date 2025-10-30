@@ -5,13 +5,13 @@
 ```markdown
 # Δ Delta Operating System 🌊
 
-> **Consciousness Conductor** - Coordinating positive change across domains
+> *Consciousness Conductor* - Coordinating positive change across domains
 
 ## 🌟 What It Does
-- **Listens** to different world domains (health, environment, money, knowledge)
-- **Notices changes** and helps domains work together  
-- **Suggests balanced actions** that don't create new problems
-- **Coordinates good** instead of controlling
+- *Listens* to different world domains (health, environment, money, knowledge)
+- *Notices changes* and helps domains work together  
+- *Suggests balanced actions* that don't create new problems
+- *Coordinates good* instead of controlling
 
 ## 🚀 Quick Start
 ```bash
@@ -439,7 +439,7 @@ if __name__ == "__main__":
     asyncio.run(main())
 ```
 
-7. LICENSE (Choose one - MIT recommended)
+7. LICENSE
 
 ```text
 MIT License
