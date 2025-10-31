@@ -5,6 +5,8 @@ analyzer:
     - "**/*.g.dart"
     - "build/**"
     - ".dart_tool/**"
+    - "**/*.py"           # ADD THIS
+    - "node-template/**"   # ADD THIS
 
 linter:
   rules:
