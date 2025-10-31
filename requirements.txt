@@ -24,7 +24,7 @@ celery==5.3.4
 
 # Monitoring
 prometheus-client==0.19.0
-grafana-api==1.0.4
+grafana-api==1.0.3
 
 # API & HTTP
 httpx==0.25.2
