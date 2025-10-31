@@ -6,8 +6,8 @@ on:
   pull_request:
     branches: [ main, master, dev ]
   schedule:
-    - cron: '0 2 * * *' # daily scan
-    - cron: '0 */6 * * *' # threat feed sync every 6 hours
+    - cron: '0 2 * * *'
+    - cron: '0 */6 * * *'
 
 permissions:
   contents: write
@@ -19,53 +19,43 @@ jobs:
   security_scan:
     runs-on: ubuntu-latest
     steps:
-      # 1️⃣ Checkout & setup
-      - name: Checkout Repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Dart
-        uses: dart-lang/setup-dart@v1
-        with:
-          sdk: stable
+      - uses: dart-lang/setup-dart@v1
+        with: sdk: stable
+      - run: dart pub get
 
-      - name: Install Dependencies
-        run: dart pub get
-
-      # 2️⃣ Run Static Analysis & Audit
       - name: Dart Linter
         run: dart analyze --fatal-infos > lint.log || true
-
       - name: Dart Dependency Audit
         run: dart pub outdated --mode=null-safety > outdated.log && dart pub audit > audit.log || true
 
-      # 3️⃣ CodeQL
       - name: CodeQL Analysis
         uses: github/codeql-action/analyze@v3
+        with: output: results/codeql-results.sarif
 
-      # 4️⃣ ML Risk Classification
-      - name: ML Risk Classifier
-        id: risk_classifier
+      - name: Parse CodeQL Results
+        id: codeql_parse
         run: |
-          pip install pandas scikit-learn > /dev/null 2>&1
-          cat > risk_model.py <<'PYCODE'
+          mkdir -p results
+          CRITICAL=$(jq '[.runs[].results[] | select(.level=="error")] | length' results/codeql-results.sarif || echo 0)
+          HIGH=$(jq '[.runs[].results[] | select(.level=="warning")] | length' results/codeql-results.sarif || echo 0)
+          MEDIUM=$(jq '[.runs[].results[] | select(.level=="note")] | length' results/codeql-results.sarif || echo 0)
+          echo "CRITICAL=$CRITICAL" >> $GITHUB_ENV
+          echo "HIGH=$HIGH" >> $GITHUB_ENV
+          echo "MEDIUM=$MEDIUM" >> $GITHUB_ENV
+
+      - name: ML Risk Classifier
+        run: |
+          pip install pandas scikit-learn
+          python3 - <<'PYCODE'
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder
 from sklearn.ensemble import RandomForestClassifier
-
-try:
-    df = pd.read_csv("deltaos_dependency_history.csv")
-except FileNotFoundError:
-    df = pd.DataFrame(columns=["package","vulnerabilities","updates","last_updated_days","risk"])
-
-df_run = []
-with open("outdated.log") as f:
-    for line in f:
-        if "!=" in line:
-            parts = line.split()
-            if len(parts) >= 2:
-                df_run.append({"package": parts[0], "vulnerabilities": 1, "updates": 1, "last_updated_days": 0, "risk": "unknown"})
+try: df = pd.read_csv("deltaos_dependency_history.csv")
+except: df = pd.DataFrame(columns=["package","vulnerabilities","updates","last_updated_days","risk"])
+df_run = [{"package": l.split()[0], "vulnerabilities":1,"updates":1,"last_updated_days":0,"risk":"unknown"} for l in open("outdated.log") if "!=" in l]
 df = pd.concat([df, pd.DataFrame(df_run)], ignore_index=True)
-
 if len(df) > 10:
     le = LabelEncoder()
     df["risk_label"] = le.fit_transform(df["risk"].fillna("low"))
@@ -74,44 +64,29 @@ if len(df) > 10:
     model = RandomForestClassifier(n_estimators=20)
     model.fit(X, y)
     preds = model.predict(X.tail(len(df_run)))
-    risks = le.inverse_transform(preds)
-    df.loc[df.index[-len(df_run):], "risk"] = risks
-    print("Predicted risk levels:")
-    for pkg, r in zip(df.tail(len(df_run))["package"], risks):
-        print(f"{pkg}: {r}")
-else:
-    print("Not enough data for ML training, using heuristic baseline.")
-    for pkg in df.tail(len(df_run))["package"]:
-        print(f"{pkg}: medium")
-
+    df.loc[df.index[-len(df_run):], "risk"] = le.inverse_transform(preds)
+for pkg,r in zip(df.tail(len(df_run))["package"], df.tail(len(df_run))["risk"]): print(f"{pkg}: {r}")
 df.to_csv("deltaos_dependency_history.csv", index=False)
 PYCODE
-          python3 risk_model.py > risk_report.log || true
 
-      # 5️⃣ Auto-remediation PR
       - name: Auto-Remediate Vulnerable Dependencies
-        id: auto_patch
         run: |
           VULN_COUNT=$(grep -c '!=' outdated.log || echo '0')
           if [ "$VULN_COUNT" -gt 0 ]; then
             dart pub upgrade
-            git config user.name "DeltaOS Security Bot"
+            git config user.name "DeltaOS Bot"
             git config user.email "security@deltaos.ai"
             BRANCH="security/fix-$(date +%s)"
             git checkout -b $BRANCH
             git add pubspec.* || true
-            git commit -m "🔒 Automated Dependency Security Patch"
+            git commit -m "🔒 Automated Security Patch"
             git push origin $BRANCH
-            gh pr create --title "🔒 Automated Security Patch" \
-              --body "This PR auto-upgrades vulnerable dependencies detected by DeltaOS Security Guardian." \
-              --base main
+            gh pr create --title "🔒 Automated Security Patch" --body "Auto-upgrades vulnerable dependencies." --base main
           fi
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        env: { GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} }
         continue-on-error: true
 
-      # 6️⃣ Upload combined artifact
-      - name: Upload Combined Security Artifact
+      - name: Upload Combined Artifact
         uses: actions/upload-artifact@v4
         with:
           name: deltaos-security-combined
@@ -120,34 +95,47 @@ PYCODE
             audit.log
             outdated.log
             risk_report.log
+            results/codeql-results.sarif
           retention-days: 14
 
-      # 7️⃣ Slack Notification with links
-      - name: Send Unified Security Summary to Slack
+      - name: Auto-Close Security Issues
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          MERGED_PRS=$(gh pr list --state merged --base main --json number,body -q '.[] | "\(.number):\(.body)"')
+          for pr in $MERGED_PRS; do
+            ISSUE_NUMS=$(echo "$pr" | grep -oE '#[0-9]+' | tr -d '#')
+            for issue in $ISSUE_NUMS; do
+              LABELS=$(gh issue view $issue --json labels -q '.labels[].name')
+              if echo "$LABELS" | grep -q 'security'; then
+                gh issue close $issue --comment "Closed: related security PR merged."
+              fi
+            done
+          done
+        env: { GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} }
+
+      - name: Send Security Summary to Slack
         if: always()
         uses: slackapi/slack-github-action@v1.27.0
         with:
           payload: |
             {
-              "text": ":robot_face: *DeltaOS Security & Threat Intelligence Summary*",
-              "attachments": [
-                {
-                  "color": "${{ job.status == 'success' && 'good' || 'danger' }}",
-                  "fields": [
-                    { "title": "Repository", "value": "<https://github.com/${{ github.repository }}|${{ github.repository }}>", "short": true },
-                    { "title": "Branch", "value": "${{ github.ref_name }}", "short": true },
-                    { "title": "Status", "value": "${{ job.status }}", "short": true },
-                    { "title": "Dart Linter Passed", "value": "$(grep -c '✓' lint.log || echo '0')", "short": true },
-                    { "title": "Dart Audit Warnings", "value": "$(grep -c '⚠️' audit.log || echo '0')", "short": true },
-                    { "title": "Critical Failures", "value": "$(grep -c '✗' audit.log || echo '0')", "short": true },
-                    { "title": "ML Risk Scores", "value": "$(tail -n 5 risk_report.log | tr '\n' ', ' || echo 'No data')", "short": false },
-                    { "title": "Security Patch PR", "value": "<https://github.com/${{ github.repository }}/pulls?q=is%3Apr+is%3Aopen+security/fix|View PRs>", "short": true },
-                    { "title": "Security Issues", "value": "<https://github.com/${{ github.repository }}/issues?q=is%3Aissue+label%3Asecurity|View Issues>", "short": true },
-                    { "title": "Combined Artifact", "value": "<https://github.com/${{ github.repository }}/actions/artifacts|Download Logs & Risk Report>", "short": false },
-                    { "title": "Timestamp", "value": "$(date -u +"%Y-%m-%d %H:%M:%S UTC")", "short": true }
-                  ]
-                }
-              ]
+              "text": ":robot_face: *DeltaOS Security Summary*",
+              "attachments": [{
+                "color": "${{ job.status == 'success' && 'good' || 'danger' }}",
+                "fields": [
+                  { "title": "Repo", "value": "<https://github.com/${{ github.repository }}|${{ github.repository }}>", "short": true },
+                  { "title": "Branch", "value": "${{ github.ref_name }}", "short": true },
+                  { "title": "Status", "value": "${{ job.status }}", "short": true },
+                  { "title": "Dart Linter", "value": "$(grep -c '✓' lint.log || echo '0')", "short": true },
+                  { "title": "Dart Audit Warnings", "value": "$(grep -c '⚠️' audit.log || echo '0')", "short": true },
+                  { "title": "Critical Failures", "value": "$(grep -c '✗' audit.log || echo '0')", "short": true },
+                  { "title": "ML Risk Scores", "value": "$(tail -n 5 risk_report.log | tr '\n' ', ' || echo 'No data')", "short": false },
+                  { "title": "CodeQL Alerts", "value": "Critical: $CRITICAL, High: $HIGH, Medium: $MEDIUM", "short": false },
+                  { "title": "Security Patch PR", "value": "<https://github.com/${{ github.repository }}/pulls?q=is%3Apr+is%3Aopen+security/fix|View PRs>", "short": true },
+                  { "title": "Security Issues", "value": "<https://github.com/${{ github.repository }}/issues?q=is%3Aissue+label%3Asecurity|View Issues>", "short": true },
+                  { "title": "Artifact", "value": "<https://github.com/${{ github.repository }}/actions/artifacts|Download Logs & Report>", "short": false },
+                  { "title": "Timestamp", "value": "$(date -u +"%Y-%m-%d %H:%M:%S UTC")", "short": true }
+                ]
+              }]
             }
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        env: { SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }} }
