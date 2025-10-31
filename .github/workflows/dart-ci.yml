@@ -1,0 +1,45 @@
+name: Dart CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup Dart
+      uses: dart-lang/setup-dart@v1
+      with:
+        sdk: '3.0.0'
+        
+    - name: Install dependencies
+      run: dart pub get
+      
+    - name: Run tests
+      run: dart test
+      
+    - name: Run analyzer
+      run: dart analyze
+      
+    - name: Format check
+      run: dart format --output=none --set-exit-if-changed .
+
+  build:
+    runs-on: ubuntu-latest
+    needs: test
+    
+    steps:
+    - uses: actions/checkout@v3
+    - uses: dart-lang/setup-dart@v1
+      
+    - name: Install dependencies
+      run: dart pub get
+      
+    - name: Build
+      run: dart compile exe bin/main.dart || echo "No main entry point - build skipped"
