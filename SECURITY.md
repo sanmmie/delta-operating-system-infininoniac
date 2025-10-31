@@ -1,36 +1,16 @@
-# DeltaOS Security Policy
+# Security Policy
 
-## 📞 Reporting Security Issues
+## Supported Versions
+Currently in alpha development. Security updates for latest commit only.
 
-**DO NOT** create public GitHub issues for security vulnerabilities.
+## Reporting a Vulnerability
+Email: security@deltaos.dev
 
-**INSTEAD:** Email adebowalesanmi@gmail.com and security@deltaos.dev with:
-- Description of the vulnerability
-- Steps to reproduce
-- Potential impact assessment
-- Suggested fix (if known)
+## Security Architecture
+- Ethical-first design
+- Domain isolation  
+- Consent-based coordination
+- No sensitive data storage
 
-## 🔒 Security Response Process
-
-1. **Acknowledgment**: Within 48 hours of report
-2. **Investigation**: 3-5 business days for initial assessment
-3. **Fix Development**: 1-2 weeks for patch development
-4. **Disclosure**: Coordinated public disclosure after patch availability
-
-## 🛡️ Security Architecture
-
-### Cryptographic Standards
-- **Encryption**: AES-256-GCM for data at rest
-- **Hashing**: SHA-256 for integrity verification
-- **Key Exchange**: ECDH with P-256 curve
-- **Signatures**: ECDSA with P-256 curve
-
-### Authentication & Authorization
-```dart
-class SecurityManager {
-  // All coordination requests require domain authentication
-  Future<bool> authenticateDomain(Domain domain, Credentials credentials);
-  
-  // Action authorization based on ethical constraints
-  Future<AuthorizationResult> authorizeAction(ProposedAction action);
-}
+## Current Status
+Alpha software - not recommended for production use.
