@@ -45,3 +45,18 @@ services:
       - DELTANET_URI=ws://delta-kernel:8765
     depends_on:
       - delta-kernel
+
+version: "3.8"
+services:
+  heritage-node:
+    build: .
+    image: delta/heritage-node:latest
+    container_name: heritage-node
+    environment:
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_KEY=${SUPABASE_KEY}
+      - DELTANET_URI=${DELTANET_URI}
+      - NODE_NAME=heritage-node-local
+      - SIGNED_URL_EXPIRY_SECONDS=3600
+    depends_on:
+      - delta-kernel  # adjust to your kernel/orchestrator service name
