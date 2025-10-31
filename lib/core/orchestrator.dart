@@ -2,12 +2,6 @@
 /// 
 /// The central coordination engine that enables different domains
 /// to work together harmoniously instead of conflicting.
-/// 
-/// Principles:
-/// 1. Coordination over control
-/// 2. Ethical-first decision making
-/// 3. Multi-domain awareness
-/// 4. Emergent harmony
 library delta_os_core.orchestrator;
 
 /// Main orchestrator class that coordinates actions across domains.
@@ -42,7 +36,7 @@ class Orchestrator {
     }
 
     // Step 2: Conflict detection and resolution
-    final resolvedActions = await _resolveConflicts(proposedActions, context);
+    final resolvedActions = _resolveConflicts(proposedActions, context);
 
     // Step 3: Harmony calculation
     final harmonyScore = _calculateHarmonyScore(resolvedActions);
@@ -61,10 +55,10 @@ class Orchestrator {
   }
 
   /// Resolve conflicts between domain actions
-  Future<List<DomainAction>> _resolveConflicts(
+  List<DomainAction> _resolveConflicts(
     List<DomainAction> actions,
     CoordinationContext context,
-  ) async {
+  ) {
     final conflicts = _detectConflicts(actions);
     
     if (conflicts.isEmpty) {
@@ -196,7 +190,7 @@ class Orchestrator {
   }
 
   void _log(String message) {
-    // Simple logging - in production, use proper logging framework
+    // Simple logging
     print('DeltaOS Orchestrator: $message');
   }
 }
