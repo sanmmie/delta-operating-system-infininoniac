@@ -36,3 +36,12 @@ services:
       - "3000:3000"
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=delta2024
+      
+      heritage-node:
+    build: .
+    image: delta/heritage-node:local
+    command: python heritage_node.py
+    environment:
+      - DELTANET_URI=ws://delta-kernel:8765
+    depends_on:
+      - delta-kernel
