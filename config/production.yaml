@@ -1,0 +1,49 @@
+# Delta OS Production Configuration
+app:
+  name: "delta-operating-system"
+  version: "1.0.0"
+  environment: "production"
+
+server:
+  host: "0.0.0.0"
+  port: 8000
+  workers: 4
+  max_requests: 1000
+
+database:
+  postgres:
+    host: "${POSTGRES_HOST:localhost}"
+    port: 5432
+    database: "delta_os"
+    username: "${POSTGRES_USER:delta_user}"
+    password: "${POSTGRES_PASSWORD:}"
+    pool_size: 20
+    timeout: 30
+
+redis:
+  host: "${REDIS_HOST:localhost}"
+  port: 6379
+  password: "${REDIS_PASSWORD:}"
+  db: 0
+
+security:
+  secret_key: "${SECRET_KEY}"
+  algorithm: "HS256"
+  access_token_expire_minutes: 30
+  rate_limit_requests: 100
+  rate_limit_minutes: 1
+
+monitoring:
+  prometheus_port: 9090
+  grafana_port: 3000
+  health_check_interval: 30
+
+ethical_engine:
+  confidence_threshold: 0.8
+  max_context_length: 4096
+  evaluation_interval: 300
+
+impact_protocol:
+  nft_contract_address: "${NFT_CONTRACT_ADDRESS}"
+  transaction_fee_percent: 1.0
+  verification_threshold: 0.9
