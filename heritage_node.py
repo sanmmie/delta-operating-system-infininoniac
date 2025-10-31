@@ -63,5 +63,5 @@ async def run():
         async for raw in ws:
             await handle_message(ws, raw)
 
-if _name_ == "_main_":
+if __name__ == "__main__":
     asyncio.run(run())
