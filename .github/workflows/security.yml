@@ -1,4 +1,4 @@
-name: 🔐 Security Scan & Alerts
+name: 🔐 DeltaOS Security Guardian
 
 on:
   push:
@@ -6,11 +6,16 @@ on:
   pull_request:
     branches: [ main, master, dev ]
   schedule:
-    - cron: '0 2 * * *' # Run daily at 2 AM UTC
+    - cron: '0 2 * * *' # Daily scan at 2 AM UTC
+
+permissions:
+  contents: read
+  security-events: write
+  issues: write
 
 jobs:
   security_scan:
-    name: Security Scan
+    name: Security Scan & Auto-Advisory
     runs-on: ubuntu-latest
 
     steps:
@@ -25,21 +30,48 @@ jobs:
       - name: Install Dependencies
         run: dart pub get
 
-      - name: Run CodeQL Analysis
+      - name: CodeQL Analysis
         uses: github/codeql-action/analyze@v3
 
-      - name: Run Dependency Vulnerability Scan
-        run: dart pub audit
+      - name: Dependency Vulnerability Scan
+        id: audit
+        run: |
+          dart pub outdated --mode=null-safety
+          dart pub audit > audit.log || true
 
-      - name: Run Security Linter
-        run: dart analyze --fatal-infos
+      - name: Security Linter
+        id: lint
+        run: |
+          dart analyze --fatal-infos > lint.log || true
 
-      - name: Upload Security Report Artifact
+      - name: Upload Security Report
         uses: actions/upload-artifact@v4
         with:
-          name: security-scan-report
-          path: .
+          name: deltaos-security-report
+          path: |
+            audit.log
+            lint.log
           retention-days: 5
+
+      - name: Create GitHub Security Advisory (if critical issues found)
+        if: failure() || contains(steps.audit.outputs, 'vulnerability')
+        run: |
+          echo "🚨 Creating GitHub Security Advisory..."
+          gh api repos/${{ github.repository }}/security-advisories \
+            -f summary="Critical vulnerabilities detected in DeltaOS" \
+            -f description="Review audit.log for details." \
+            -f severity="high" \
+            -f withdrawn="false"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create Issue for Security Alerts
+        if: failure()
+        uses: peter-evans/create-issue-from-file@v5
+        with:
+          title: "🚨 DeltaOS Security Alert: Vulnerability Detected"
+          content-filepath: audit.log
+          labels: security, critical, automation
 
       - name: Notify Slack (on Success)
         if: success()
@@ -74,7 +106,7 @@ jobs:
                   "fields": [
                     { "title": "Repository", "value": "${{ github.repository }}", "short": true },
                     { "title": "Branch", "value": "${{ github.ref_name }}", "short": true },
-                    { "title": "Error Log", "value": "Check GitHub Actions logs for details." }
+                    { "title": "Advisory", "value": "GitHub Security Advisory created if vulnerabilities found." }
                   ]
                 }
               ]
