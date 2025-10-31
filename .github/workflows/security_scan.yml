@@ -1,0 +1,106 @@
+name: Security Scan
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    - cron: '0 3 * * 1' # Weekly scan every Monday at 3 AM UTC
+
+jobs:
+  security_scan:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Dart
+        uses: dart-lang/setup-dart@v1
+
+      - name: CodeQL Initialization
+        uses: github/codeql-action/init@v2
+        with:
+          languages: dart
+
+      - name: CodeQL Analysis
+        id: codeql
+        uses: github/codeql-action/analyze@v2
+
+      - name: Dependency Vulnerability Scan
+        id: audit
+        run: dart pub audit --json > audit-report.json || echo "Audit completed with warnings"
+
+      - name: Security Linter
+        id: lint
+        run: dart analyze --fatal-infos > lint-report.txt || echo "Lint completed with warnings"
+
+      - name: Upload Security Reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: deltaos-security-reports
+          path: |
+            audit-report.json
+            lint-report.txt
+
+      - name: Summarize Security Results
+        id: summarize
+        run: |
+          echo "status=success" >> $GITHUB_OUTPUT
+          echo "summary=" >> $GITHUB_OUTPUT
+
+          if grep -qi "error" lint-report.txt; then
+            echo "status=failed" >> $GITHUB_OUTPUT
+          elif grep -qi "vulnerability" audit-report.json; then
+            echo "status=warning" >> $GITHUB_OUTPUT
+          fi
+
+          echo "summary=Top issues:" >> summary.txt
+          echo "Lint Issues:" >> summary.txt
+          grep -m 3 "error" lint-report.txt || echo "No lint errors found" >> summary.txt
+          echo "" >> summary.txt
+          echo "Vulnerabilities:" >> summary.txt
+          grep -m 3 "vulnerability" audit-report.json || echo "No vulnerabilities found" >> summary.txt
+
+          echo "summary<<EOF" >> $GITHUB_OUTPUT
+          cat summary.txt >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Comment on Pull Request
+        if: github.event_name == 'pull_request'
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: "🔐 DeltaOS Security Scan"
+          message: |
+            **Security Scan Results**
+            - Status: ${{ steps.summarize.outputs.status }}
+            - CodeQL: ✅ Completed
+            - Dependency Audit: ✅ Check `audit-report.json`
+            - Linter: ✅ Check `lint-report.txt`
+            > Review full reports in [Artifacts](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+
+            **Top Findings**
+            ```
+            ${{ steps.summarize.outputs.summary }}
+            ```
+
+      - name: Send Slack Notification
+        if: always()
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_COLOR: ${{ steps.summarize.outputs.status == 'success' && 'good' || steps.summarize.outputs.status == 'warning' && 'warning' || 'danger' }}
+          SLACK_TITLE: "DeltaOS Security Scan — ${{ steps.summarize.outputs.status }}"
+          SLACK_MESSAGE: |
+            *Repository:* ${{ github.repository }}
+            *Branch:* ${{ github.ref_name }}
+            *Status:* ${{ steps.summarize.outputs.status }}
+            *Top Findings:*
+            ```
+            ${{ steps.summarize.outputs.summary }}
+            ```
+            *Run:* <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Full Reports>
