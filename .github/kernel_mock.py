@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-kernel-mock.py — minimal Δ kernel mock / router
+kernel-mock.py — minimal Δ kernel mock / router 
 
 Purpose:
 - Accept websocket connections from nodes and clients.
