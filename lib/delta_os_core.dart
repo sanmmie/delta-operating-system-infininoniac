@@ -1,17 +1,31 @@
+/// DeltaOS Core Library
+/// 
+/// A coordination layer operating system that enables different domains
+/// to work together harmoniously instead of conflicting.
+/// 
+/// ## Overview
+/// 
+/// DeltaOS provides:
+/// - Multi-domain coordination
+/// - Ethical decision making
+/// - Conflict resolution
+/// - Harmony-based optimization
+/// 
+/// ## Usage
+/// 
+/// ```dart
+/// import 'package:delta_os_core/delta_os_core.dart';
+/// 
+/// final orchestrator = Orchestrator();
+/// final result = await orchestrator.coordinate(
+///   proposedActions: [
+///     DomainAction(domain: 'climate', type: 'reduce_emissions'),
+///     DomainAction(domain: 'economy', type: 'green_growth'),
+///   ],
+///   context: CoordinationContext(),
+/// );
+/// ```
 library delta_os_core;
 
-// Core exports
-export 'core/orchestrator/orchestrator.dart';
-export 'core/domains/domain_manager.dart';
-export 'core/ethics/ethical_governance.dart';
-export 'core/errors/delta_errors.dart';
-export 'core/validation/manifest_validator.dart';
-
-// Domain exports
-export 'domains/climate/climate_domain.dart';
-export 'domains/economy/economy_domain.dart';
-export 'domains/health/health_domain.dart';
-
-// Coordination exports
-export 'coordination/conflict_resolver.dart';
-export 'coordination/delta_engine.dart';
+// Core Coordination
+export 'core/orchestrator.dart';
