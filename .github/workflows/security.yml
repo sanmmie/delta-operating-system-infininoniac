@@ -19,21 +19,25 @@ jobs:
   security_scan:
     runs-on: ubuntu-latest
     steps:
+      # 1️⃣ Checkout & setup
       - uses: actions/checkout@v4
 
       - uses: dart-lang/setup-dart@v1
         with: sdk: stable
       - run: dart pub get
 
+      # 2️⃣ Dart Linter & Audit
       - name: Dart Linter
         run: dart analyze --fatal-infos > lint.log || true
       - name: Dart Dependency Audit
         run: dart pub outdated --mode=null-safety > outdated.log && dart pub audit > audit.log || true
 
+      # 3️⃣ CodeQL Analysis
       - name: CodeQL Analysis
         uses: github/codeql-action/analyze@v3
         with: output: results/codeql-results.sarif
 
+      # 4️⃣ Parse CodeQL Results
       - name: Parse CodeQL Results
         id: codeql_parse
         run: |
@@ -45,6 +49,7 @@ jobs:
           echo "HIGH=$HIGH" >> $GITHUB_ENV
           echo "MEDIUM=$MEDIUM" >> $GITHUB_ENV
 
+      # 5️⃣ ML Risk Classification
       - name: ML Risk Classifier
         run: |
           pip install pandas scikit-learn
@@ -69,24 +74,27 @@ for pkg,r in zip(df.tail(len(df_run))["package"], df.tail(len(df_run))["risk"]):
 df.to_csv("deltaos_dependency_history.csv", index=False)
 PYCODE
 
+      # 6️⃣ Auto-Remediate Vulnerable Dependencies
       - name: Auto-Remediate Vulnerable Dependencies
         run: |
           VULN_COUNT=$(grep -c '!=' outdated.log || echo '0')
           if [ "$VULN_COUNT" -gt 0 ]; then
             dart pub upgrade
-            git config user.name "DeltaOS Bot"
+            git config user.name "DeltaOS Security Bot"
             git config user.email "security@deltaos.ai"
             BRANCH="security/fix-$(date +%s)"
             git checkout -b $BRANCH
             git add pubspec.* || true
             git commit -m "🔒 Automated Security Patch"
-            git push origin $BRANCH
-            gh pr create --title "🔒 Automated Security Patch" --body "Auto-upgrades vulnerable dependencies." --base main
+            git push https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }} $BRANCH
+            gh pr create --title "🔒 Automated Security Patch" --body "This PR upgrades vulnerable dependencies detected by DeltaOS Security Guardian." --base main
           fi
-        env: { GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} }
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         continue-on-error: true
 
-      - name: Upload Combined Artifact
+      # 7️⃣ Upload Combined Artifact
+      - name: Upload Combined Security Artifact
         uses: actions/upload-artifact@v4
         with:
           name: deltaos-security-combined
@@ -98,6 +106,7 @@ PYCODE
             results/codeql-results.sarif
           retention-days: 14
 
+      # 8️⃣ Auto-Close Security Issues
       - name: Auto-Close Security Issues
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
@@ -111,8 +120,10 @@ PYCODE
               fi
             done
           done
-        env: { GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} }
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      # 9️⃣ Slack Notification
       - name: Send Security Summary to Slack
         if: always()
         uses: slackapi/slack-github-action@v1.27.0
@@ -138,4 +149,5 @@ PYCODE
                 ]
               }]
             }
-        env: { SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }} }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
