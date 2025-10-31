@@ -4,7 +4,7 @@
 
 **DO NOT** create public GitHub issues for security vulnerabilities.
 
-**INSTEAD:** Email security@deltaos.dev with:
+**INSTEAD:** Email adebowalesanmi@gmail.com and security@deltaos.dev with:
 - Description of the vulnerability
 - Steps to reproduce
 - Potential impact assessment
