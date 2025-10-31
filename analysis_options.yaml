@@ -1,0 +1,18 @@
+include: package:flutter_lints/flutter.yaml
+
+analyzer:
+  exclude:
+    - "**/*.g.dart"
+    - "build/**"
+    - ".dart_tool/**"
+
+  strong-mode:
+    implicit-casts: false
+    implicit-dynamic: false
+
+linter:
+  rules:
+    - always_declare_return_types
+    - avoid_empty_else
+    - prefer_final_locals
+    - use_key_in_widget_constructors
