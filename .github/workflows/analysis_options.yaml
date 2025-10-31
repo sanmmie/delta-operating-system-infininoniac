@@ -1,0 +1,38 @@
+include: package:flutter_lints/flutter.yaml
+
+analyzer:
+  exclude:
+    - "**/*.g.dart"
+    - "**/*.freezed.dart"
+    - "**/*.gr.dart"
+    - "build/**"
+    - ".dart_tool/**"
+    - "**/node_modules/**"
+    - "**/python/**"           # Explicitly exclude Python directories
+
+  strong-mode:
+    implicit-casts: false
+    implicit-dynamic: false
+
+linter:
+  rules:
+    - always_declare_return_types
+    - always_require_non_null_named_parameters
+    - annotate_overrides
+    - avoid_init_to_null
+    - avoid_return_types_on_setters
+    - await_only_futures
+    - camel_case_types
+    - constant_identifier_names
+    - empty_constructor_bodies
+    - library_names
+    - library_prefixes
+    - no_duplicate_case_values
+    - null_closures
+    - prefer_conditional_assignment
+    - prefer_final_fields
+    - prefer_final_in_for_each
+    - prefer_final_locals
+    - slash_for_doc_comments
+    - type_init_formals
+    - unnecessary_getters_setters
