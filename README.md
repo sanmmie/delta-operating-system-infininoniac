@@ -1,4 +1,14 @@
 ```markdown
+## 🚀 Production Deployment
+
+### Quick Start:
+```bash
+# Make scripts executable
+chmod +x scripts/deploy-production.sh
+
+# Deploy to production
+./scripts/deploy-production.sh
+
 # 🌍 Δ Delta Operating System — Infininoniac Edition  
 > *Consciousness Conductor | Impact Protocol Engine | Ethical AI for Global Coordination*
 
