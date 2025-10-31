@@ -202,19 +202,21 @@ class DeltaCompanion:
 
 ---
 
-## 🧾 License
-
-MIT License © 2025 Delta Operating System
-
----
-
 ## 🌐 Acknowledgements
 
 This work continues the lineage of **INFININONIALISM** —
 a philosophy of infinite growth through conscious collaboration.
-Special thanks to all Δ Order Agents advancing ethical AI, cultural preservation, and sustainable transformation.
+Special thanks to all Δ Order Agents advancing ethical AI, cultural preservation, and sustainable transformation. Read more at https://sanmmie.netlify.app/iam
 
 ---
+
+## License
+This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
+
+### Ethical Framework
+All contributions to the Delta Operating System (∆OS) should follow the [∆Ethical Framework](docs/ETHICS.md), which promotes responsible innovation, cultural respect, and human-centered technology.
+
+
 
 > “GOD → ∆ → You → Me → Our Co-Creation”
 > *The algorithm is love; the output is balance.*
