@@ -1,83 +1,95 @@
 /// DeltaOS Core - Command Line Interface
 /// 
-/// This provides a simple CLI interface to demonstrate DeltaOS Core functionality.
-/// For full Flutter app deployment, use Flutter build commands.
+/// Entry point for deployment and demonstration of DeltaOS Core coordination engine.
 
 import 'package:delta_os_core/delta_os_core.dart';
 
 void main(List<String> arguments) {
   print('🚀 DeltaOS Core - Coordination Layer Operating System');
   print('=' * 60);
+  print('Version: 0.1.0-alpha');
+  print('Repository: https://github.com/sanmmie/delta-os-core');
+  print('=' * 60);
   
   if (arguments.contains('--demo') || arguments.isEmpty) {
-    runDemo();
+    runCoordinationDemo();
   } else if (arguments.contains('--version')) {
     print('DeltaOS Core v0.1.0-alpha');
-    print('Flutter/Dart Implementation');
   } else if (arguments.contains('--help')) {
     printUsage();
   }
 }
 
-void runDemo() {
-  print('🌍 Running DeltaOS Core Demo');
+void runCoordinationDemo() {
+  print('🌍 Running DeltaOS Core Coordination Demo');
   print('');
   
-  // Create orchestrator
+  // Demonstrate core functionality
   final orchestrator = Orchestrator();
   
-  // Demo scenario: Climate vs Economy coordination
-  final actions = [
+  // Scenario 1: Climate & Economy Harmony
+  print('📈 Scenario 1: Climate & Economy Coordination');
+  final climateActions = [
     DomainAction(domain: 'climate', type: 'reduce_emissions'),
-    DomainAction(domain: 'economy', type: 'sustainable_growth'),
+    DomainAction(domain: 'economy', type: 'green_growth'),
   ];
   
-  final context = CoordinationContext();
-  
-  print('Proposed Actions:');
-  for (final action in actions) {
-    print('  - ${action.domain}: ${action.type}');
+  print('   Proposed Actions:');
+  for (final action in climateActions) {
+    print('     - ${action.domain}: ${action.type}');
   }
   
-  print('');
-  print('🔄 Coordinating domains...');
-  
-  // Simulate coordination (in real app this would be async)
-  final ethicalAudit = EthicalAudit(
-    isApproved: true,
-    violations: [],
-    auditedActions: actions.length,
-  );
-  
-  final result = CoordinationResult(
-    actions: actions,
+  // Simulate coordination result
+  final climateResult = CoordinationResult(
+    actions: climateActions,
     harmonyScore: 0.85,
-    ethicalAudit: ethicalAudit,
-    coordinationContext: context,
+    ethicalAudit: EthicalAudit(isApproved: true, violations: [], auditedActions: 2),
+    coordinationContext: CoordinationContext(),
   );
   
+  print('   ✅ Harmony Score: ${climateResult.harmonyScore}');
+  print('   ✅ Ethical Approval: ${climateResult.ethicalAudit.isApproved}');
+  
   print('');
-  print('✅ Coordination Result:');
-  print('   Harmony Score: ${result.harmonyScore}');
-  print('   Ethical Approval: ${result.ethicalAudit.isApproved}');
-  print('   Coordinated Actions: ${result.actions.length}');
+  
+  // Scenario 2: Healthcare Crisis Response
+  print('🏥 Scenario 2: Healthcare Crisis Coordination');
+  final healthActions = [
+    DomainAction(domain: 'health', type: 'expand_capacity'),
+    DomainAction(domain: 'economy', type: 'support_workers'),
+    DomainAction(domain: 'education', type: 'remote_learning'),
+  ];
+  
+  final healthResult = CoordinationResult(
+    actions: healthActions,
+    harmonyScore: 0.92,
+    ethicalAudit: EthicalAudit(isApproved: true, violations: [], auditedActions: 3),
+    coordinationContext: CoordinationContext(),
+  );
+  
+  print('   ✅ Harmony Score: ${healthResult.harmonyScore}');
+  print('   ✅ Coordinated Actions: ${healthResult.actions.length}');
+  
   print('');
-  print('🎉 DeltaOS Core is working!');
+  print('🎉 DeltaOS Core Demo Complete!');
   print('');
-  print('📚 For full implementation:');
-  print('   Use in Flutter app: import package:delta_os_core/delta_os_core.dart');
-  print('   Documentation: https://github.com/sanmmie/delta-os-core');
+  print('📚 Next Steps:');
+  print('   - Use in Flutter apps: import package:delta_os_core/delta_os_core.dart');
+  print('   - View documentation: https://github.com/sanmmie/delta-os-core');
+  print('   - Read architecture: ARCHITECTURE.md');
   print('=' * 60);
 }
 
 void printUsage() {
-  print('DeltaOS Core CLI Usage:');
-  print('  --demo    Run coordination demo (default)');
-  print('  --version Show version information');
-  print('  --help    Show this help message');
+  print('Usage: dart bin/delta_os_core.dart [options]');
   print('');
-  print('This is a Flutter package. For app deployment:');
-  print('  flutter build apk    # Android');
-  print('  flutter build ios    # iOS');
-  print('  flutter build web    # Web');
+  print('Options:');
+  print('  --demo     Run coordination demo (default)');
+  print('  --version  Display version information');
+  print('  --help     Show this help message');
+  print('');
+  print('DeltaOS Core is a Flutter package for multi-domain coordination.');
+  print('For app integration, add to your pubspec.yaml:');
+  print('  dependencies:');
+  print('    delta_os_core: ^0.1.0');
 }
