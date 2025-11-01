@@ -3,6 +3,7 @@
     "builder": "NIXPACKS"
   },
   "deploy": {
-    "startCommand": "python api/main.py"
+    "startCommand": "dart bin/delta_os_core.dart --demo",
+    "restartPolicyType": "ON_FAILURE"
   }
 }
