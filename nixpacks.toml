@@ -1,0 +1,18 @@
+[phases]
+setup = "flutter"
+install = "flutter pub get"
+build = "flutter build bundle"
+
+[start]
+cmd = "echo 'DeltaOS Core - Flutter project deployed successfully' && echo 'This is a Flutter package, not a standalone server'"
+
+[build]
+baseImage = "ubuntu:22.04"
+
+[[build.env]]
+name = "FLUTTER_ROOT"
+value = "/opt/flutter"
+
+[[build.env]]
+name = "PUB_CACHE"
+value = "/root/.pub-cache"
