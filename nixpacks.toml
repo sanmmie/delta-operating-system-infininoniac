@@ -1,0 +1,11 @@
+[phases.setup]
+nixPkgs = ["flutter"]
+
+[phases.install]
+cmds = ["flutter pub get"]
+
+[phases.build]
+cmds = ["flutter build apk"]  # or whatever build target you need
+
+[start]
+cmd = "dart bin/delta_os_core.dart --demo"
