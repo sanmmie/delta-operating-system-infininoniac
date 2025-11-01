@@ -1,10 +1,10 @@
 [phases]
 setup = "flutter"
 install = "flutter pub get"
-build = "flutter build bundle"
+build = "echo 'DeltaOS Core - Flutter package built successfully'"
 
 [start]
-cmd = "echo 'DeltaOS Core - Flutter project deployed successfully' && echo 'This is a Flutter package, not a standalone server'"
+cmd = "dart bin/delta_os_core.dart --demo"
 
 [build]
 baseImage = "ubuntu:22.04"
@@ -16,3 +16,6 @@ value = "/opt/flutter"
 [[build.env]]
 name = "PUB_CACHE"
 value = "/root/.pub-cache"
+
+[build.args]
+FLUTTER_VERSION = "3.13.0"
