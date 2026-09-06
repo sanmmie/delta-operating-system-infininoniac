@@ -3,6 +3,9 @@ from fastapi import Request
 from fastapi.responses import JSONResponse
 import logging
 
+logger = logging.getLogger(__name__)
+
+
 async def global_exception_handler(request: Request, exc: Exception):
     logger.error(f"Unhandled exception: {str(exc)}", exc_info=True)
     return JSONResponse(
@@ -10,6 +13,6 @@ async def global_exception_handler(request: Request, exc: Exception):
         content={
             "error": "Internal server error",
             "message": "An unexpected error occurred",
-            "request_id": request.state.request_id
-        }
+            "request_id": getattr(request.state, "request_id", None),
+        },
     )

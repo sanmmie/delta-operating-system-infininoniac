@@ -1,0 +1,26 @@
+# Local-safe defaults. Production deployments must use production.yaml and
+# provide the required secrets through the environment.
+app:
+  name: "delta-operating-system"
+  version: "1.0.0"
+  environment: "development"
+
+database:
+  postgres:
+    host: "${POSTGRES_HOST:localhost}"
+    port: 5432
+    database: "${POSTGRES_DB:delta_os}"
+    username: "${POSTGRES_USER:delta_user}"
+    password: "${POSTGRES_PASSWORD:}"
+    pool_size: 5
+
+redis:
+  host: "${REDIS_HOST:localhost}"
+  port: 6379
+  password: "${REDIS_PASSWORD:}"
+  db: 0
+
+security:
+  secret_key: "${SECRET_KEY:development-only-not-for-production}"
+  algorithm: "HS256"
+  access_token_expire_minutes: 30

@@ -2,6 +2,7 @@
 from functools import wraps
 import time
 
+
 class CircuitBreaker:
     def __init__(self, failure_threshold=5, recovery_timeout=60):
         self.failure_threshold = failure_threshold
@@ -9,7 +10,7 @@ class CircuitBreaker:
         self.failures = 0
         self.state = "CLOSED"  # CLOSED, OPEN, HALF_OPEN
         self.last_failure_time = None
-    
+
     def __call__(self, func):
         @wraps(func)
         async def wrapper(*args, **kwargs):
@@ -18,7 +19,7 @@ class CircuitBreaker:
                     self.state = "HALF_OPEN"
                 else:
                     raise Exception("Circuit breaker is OPEN")
-            
+
             try:
                 result = await func(*args, **kwargs)
                 if self.state == "HALF_OPEN":
@@ -31,4 +32,5 @@ class CircuitBreaker:
                 if self.failures >= self.failure_threshold:
                     self.state = "OPEN"
                 raise e
+
         return wrapper

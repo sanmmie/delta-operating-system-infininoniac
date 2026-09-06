@@ -35,9 +35,9 @@ check_prerequisites() {
         exit 1
     fi
     
-    # Check if Docker Compose is installed
-    if ! command -v docker-compose &> /dev/null; then
-        log_error "Docker Compose is not installed"
+    # Check if Docker Compose v2 is installed
+    if ! docker compose version &> /dev/null; then
+        log_error "Docker Compose v2 is not installed"
         exit 1
     fi
     
@@ -87,7 +87,7 @@ validate_env() {
 # Pull latest images
 pull_images() {
     log_info "Pulling latest Docker images..."
-    docker-compose -f docker-compose.production.yml pull
+    docker compose -f docker-compose.production.yml pull
 }
 
 # Run database migrations
@@ -96,12 +96,12 @@ run_migrations() {
     
     # Wait for PostgreSQL to be ready
     log_info "Waiting for PostgreSQL to be ready..."
-    until docker-compose -f docker-compose.production.yml exec -T postgres pg_isready -U $POSTGRES_USER; do
+    until docker compose -f docker-compose.production.yml exec -T postgres pg_isready -U $POSTGRES_USER; do
         sleep 5
     done
     
     # Run Alembic migrations
-    docker-compose -f docker-compose.production.yml run --rm api \
+    docker compose -f docker-compose.production.yml run --rm delta-api \
         alembic upgrade head
     
     log_info "Database migrations completed ✓"
@@ -110,10 +110,10 @@ run_migrations() {
 # Start services
 start_services() {
     log_info "Starting Delta OS services..."
-    docker-compose -f docker-compose.production.yml up -d
+    docker compose -f docker-compose.production.yml up -d
     
     log_info "Scaling API instances..."
-    docker-compose -f docker-compose.production.yml up -d --scale api=3
+    docker compose -f docker-compose.production.yml up -d --scale delta-api=3
 }
 
 # Health checks
@@ -126,7 +126,7 @@ health_checks() {
     while [ $attempt -le $max_attempts ]; do
         log_info "Health check attempt $attempt/$max_attempts..."
         
-        if curl -s -f http://localhost:8000/health > /dev/null; then
+        if curl -s -f http://localhost/health > /dev/null; then
             log_info "API health check passed ✓"
             break
         fi
@@ -142,8 +142,8 @@ health_checks() {
     done
     
     # Check individual services
-    check_service_health "PostgreSQL" "docker-compose -f docker-compose.production.yml exec -T postgres pg_isready -U $POSTGRES_USER"
-    check_service_health "Redis" "docker-compose -f docker-compose.production.yml exec -T redis redis-cli ping"
+    check_service_health "PostgreSQL" "docker compose -f docker-compose.production.yml exec -T postgres pg_isready -U $POSTGRES_USER"
+    check_service_health "Redis" "docker compose -f docker-compose.production.yml exec -T redis redis-cli -a $REDIS_PASSWORD ping"
 }
 
 check_service_health() {
@@ -161,7 +161,7 @@ check_service_health() {
 # Show service logs for debugging
 show_service_logs() {
     log_warn "Showing recent service logs for debugging:"
-    docker-compose -f docker-compose.production.yml logs --tail=50
+    docker compose -f docker-compose.production.yml logs --tail=50
 }
 
 # Perform post-deployment checks
@@ -169,7 +169,7 @@ post_deployment_checks() {
     log_info "Running post-deployment checks..."
     
     # Check if all services are running
-    local running_services=$(docker-compose -f docker-compose.production.yml ps --services --filter "status=running")
+    local running_services=$(docker compose -f docker-compose.production.yml ps --services --filter "status=running")
     local expected_services=("api" "postgres" "redis" "prometheus" "grafana" "nginx")
     
     for service in "${expected_services[@]}"; do
@@ -182,9 +182,8 @@ post_deployment_checks() {
     done
     
     # Verify API endpoints
-    verify_api_endpoint "Root endpoint" "http://localhost:8000/"
-    verify_api_endpoint "Health endpoint" "http://localhost:8000/health"
-    verify_api_endpoint "Metrics endpoint" "http://localhost:8000/metrics"
+    verify_api_endpoint "Root endpoint" "http://localhost/"
+    verify_api_endpoint "Health endpoint" "http://localhost/health"
 }
 
 verify_api_endpoint() {
@@ -204,7 +203,7 @@ deployment_summary() {
     echo ""
     echo "🎉 Δ Delta OS Deployment Complete!"
     echo "======================================"
-    echo "🌐 API URL: http://localhost:8000"
+    echo "🌐 API URL: http://localhost"
     echo "📊 Grafana: http://localhost:3000 (admin:${GRAFANA_PASSWORD:0:4}****)"
     echo "📈 Prometheus: http://localhost:9090"
     echo "🗄️  PostgreSQL: localhost:5432"
@@ -215,7 +214,7 @@ deployment_summary() {
     echo "   - Configure domain names in production"
     echo "   - Set up automated backups"
     echo ""
-    log_info "View logs: docker-compose -f docker-compose.production.yml logs -f"
+    log_info "View logs: docker compose -f docker-compose.production.yml logs -f"
 }
 
 # Main deployment function
